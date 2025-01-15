@@ -1,15 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { LoginDto } from './dto/login-user.dto';
 
 @Controller('auth')
@@ -36,13 +27,8 @@ export class AuthController {
     return this.authService.findOne(email);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  remove(@Param('id') email: string) {
+    return this.authService.remove(email);
   }
 }

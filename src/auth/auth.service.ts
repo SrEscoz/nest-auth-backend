@@ -6,16 +6,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { User } from './entities/user.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { DeleteResult, Model } from 'mongoose';
 
 import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { SimpleResponseDto } from './dto/simple-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -49,12 +49,12 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto): Promise<LoginResponseDto> {
-      await this.create(createUserDto);
+    await this.create(createUserDto);
 
-      return this.login({
-        email: createUserDto.email,
-        password: createUserDto.password,
-      });
+    return this.login({
+      email: createUserDto.email,
+      password: createUserDto.password,
+    });
   }
 
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
@@ -91,12 +91,17 @@ export class AuthService {
     return user;
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+  async remove(email: string): Promise<SimpleResponseDto> {
+    const deleteUser: DeleteResult = await this.userModel.deleteOne({ email });
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    if (deleteUser.deletedCount === 0) {
+      throw new NotFoundException(`User with email ${email} not found.`);
+    }
+
+    return {
+      status: 200,
+      message: 'User with email ' + email + ' was removed!',
+    };
   }
 
   private getJwtToken(payload: JwtPayload) {
