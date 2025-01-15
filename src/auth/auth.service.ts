@@ -91,6 +91,16 @@ export class AuthService {
     return user;
   }
 
+  async findById(id: string): Promise<User> {
+    const [user] = await Promise.all([this.userModel.findById(id)]);
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    return user;
+  }
+
   async remove(email: string): Promise<SimpleResponseDto> {
     const deleteUser: DeleteResult = await this.userModel.deleteOne({ email });
 
