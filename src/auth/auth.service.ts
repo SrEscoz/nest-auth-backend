@@ -15,6 +15,7 @@ import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +25,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  private async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const { password, ...userData } = createUserDto;
 
@@ -33,7 +34,10 @@ export class AuthService {
         ...userData,
       });
 
-      return await newUser.save();
+      await newUser.save();
+      const { password: _, ...savedUser } = newUser.toJSON();
+
+      return savedUser;
     } catch (error) {
       if (error.code === 11000) {
         // Entrada duplicada
@@ -44,7 +48,16 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async register(createUserDto: CreateUserDto): Promise<LoginResponseDto> {
+      await this.create(createUserDto);
+
+      return this.login({
+        email: createUserDto.email,
+        password: createUserDto.password,
+      });
+  }
+
+  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto;
 
     const [user] = await Promise.all([this.userModel.findOne({ email })]);
@@ -86,7 +99,7 @@ export class AuthService {
     return `This action removes a #${id} auth`;
   }
 
-  getJwtToken(payload: JwtPayload) {
+  private getJwtToken(payload: JwtPayload) {
     return this.jwtService.sign(payload);
   }
 }
