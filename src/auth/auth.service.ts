@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   findAll() {
-    return `This action returns all auth`;
+    return this.userModel.find();
   }
 
   async findOne(email: string): Promise<User> {
